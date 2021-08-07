@@ -1,5 +1,10 @@
 var express = require('express');
 var logger = require('morgan');
+const { ToadScheduler } = require('toad-scheduler');
+const { sendEmailsJob } = require("./config/scheduler/jobs");
+
+const scheduler = new ToadScheduler();
+scheduler.addSimpleIntervalJob(sendEmailsJob);
 
 var indexRouter = require('./routes/index');
 
