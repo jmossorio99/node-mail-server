@@ -1,11 +1,17 @@
-var express = require('express');
-var logger = require('morgan');
-const { ToadScheduler } = require('toad-scheduler');
-const { sendEmailsJob } = require("./config/scheduler/jobs");
+/**
+ * Module dependencies.
+ */
+var express = require("express");
+var logger = require("morgan");
 
-const scheduler = new ToadScheduler();
-scheduler.addSimpleIntervalJob(sendEmailsJob);
+/**
+ * Scheduler.
+ */
+require("./config/scheduler/scheduler");
 
+/**
+ * Importing routes.
+ */
 var indexRouter = require('./routes/index');
 
 var app = express();

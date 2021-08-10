@@ -1,6 +1,17 @@
-const {SimpleIntervalJob, AsyncTask} = require('toad-scheduler');
-const checkEmailsToSend = require("../../services/service_mail_sender");
+/**
+ * This module is for creating the jobs that will be added to the scheduler. The jobs are then used in the
+ * scheduler.js module to instantiate the scheduler for the server.
+ */
+/**
+ * Module dependencies.
+ */
+const { SimpleIntervalJob, AsyncTask } = require('toad-scheduler');
+const { checkEmailsToSend } = require("../../services/service_mail_sender");
 
+/**
+ * This async task calls the checkEmailsToSend function in the service_mail_sender.js module. This task
+ * is run automatically by the scheduler.
+ */
 const sendEmailsTask = new AsyncTask(
     "sendEmailsTask",
     () => {
@@ -11,6 +22,10 @@ const sendEmailsTask = new AsyncTask(
     }
 );
 
+/**
+ * This SimpleIntervalJob defines the interval for the automatic execution of the sendEmailsTask by
+ * the scheduler.
+ */
 const sendEmailsJob = new SimpleIntervalJob({seconds: 10,}, sendEmailsTask);
 
-module.exports = {sendEmailsJob};
+exports.sendEmailsJob = sendEmailsJob;

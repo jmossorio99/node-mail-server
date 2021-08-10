@@ -1,4 +1,6 @@
 const nodemailer = require("nodemailer");
+const { convert } = require('html-to-text');
+const { getEmailsTable, updateEmailsTable } = require("../config/database/dbConfig");
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -18,24 +20,31 @@ function dispatchEmail(emailDetails) {
     })
 }
 
-// TODO: finish this function
 function buildEmailDetails(emailData) {
-
+    const emailDetails = {
+        from: '"Jose Ossorio" <joseossorio99@gmail.com>',
+        // to: emailData.trml_mailto,
+        to: "joseossorio99@hotmail.com",
+        subject: emailData.trml_subject,
+        text: convert(emailData.trml_body, { preserveNewlines: true })
+    }
+    return emailDetails;
 }
 
-const checkEmailsToSend = () => {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve("hello");
-            const emailDetails = {
-                from: '"Jose Ossorio" <joseossorio99@gmail.com>',
-                to: "joseossorio99@hotmail.com",
-                subject: "Test",
-                text: "Hello, this is a test. Sent at " + new Date()
-            }
-            dispatchEmail(emailDetails);
-        }, 100)
-    });
+const checkEmailsToSend = async () => {
+    const rows = await getEmailsTable();
+    const idsToUpdate = [];
+    for (const row of rows) {
+        if (row.trml_issend === "N") {
+            idsToUpdate.push(`"${row.trml_key}"`);
+            const emailDetails = buildEmailDetails(row);
+            console.log(emailDetails);
+        }
+    }
+    if (idsToUpdate.length > 0) {
+        console.log("Updating database hehehehehe")
+        // await updateEmailsTable(idsToUpdate);
+    }
 }
 
-module.exports = checkEmailsToSend;
+exports.checkEmailsToSend = checkEmailsToSend;
