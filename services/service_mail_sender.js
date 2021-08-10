@@ -1,15 +1,27 @@
+/**
+ * This module handles the sending of the emails.
+ */
+/**
+ * Module dependencies.
+ */
 const nodemailer = require("nodemailer");
 const { convert } = require('html-to-text');
 const { getEmailsTable, updateEmailsTable } = require("../config/database/dbConfig");
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+    pool: true,
+    host: process.env.MAIL_SMTP_SERVER,
+    port: process.env.MAIL_SMTP_PORT,
     auth: {
-        user: "joseossorio99@gmail.com",
-        pass: "ym&8#HWn97Q7bsobaW4X"
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASSWORD
     }
 });
 
+/**
+ * This function receives the emailDetails required by the nodemailer library
+ * and then sends an email according to said details.
+ */
 function dispatchEmail(emailDetails) {
     transporter.sendMail(emailDetails, (err, data) => {
         if (err) {
@@ -20,9 +32,13 @@ function dispatchEmail(emailDetails) {
     })
 }
 
+/**
+ * This is an auxiliary function to build emailDetails for a specific emailData object retrieved from
+ * the database
+ */
 function buildEmailDetails(emailData) {
     const emailDetails = {
-        from: '"Jose Ossorio" <joseossorio99@gmail.com>',
+        from: `"${process.env.MAIL_NAME || ''}" <${process.env.MAIL_USER}>`,
         // to: emailData.trml_mailto,
         to: "joseossorio99@hotmail.com",
         subject: emailData.trml_subject,
@@ -31,6 +47,12 @@ function buildEmailDetails(emailData) {
     return emailDetails;
 }
 
+/**
+ * This async function is called by the scheduler and it checks for emails to send.
+ * If an email needs to be sent, it calls the dispatch email function defined
+ * above. Finally, it makes sure to call the updateEmailsTable function defined
+ * on the dbConfig.js module to update the rows of the emails that were sent.
+ */
 const checkEmailsToSend = async () => {
     const rows = await getEmailsTable();
     const idsToUpdate = [];
@@ -38,12 +60,11 @@ const checkEmailsToSend = async () => {
         if (row.trml_issend === "N") {
             idsToUpdate.push(`"${row.trml_key}"`);
             const emailDetails = buildEmailDetails(row);
-            console.log(emailDetails);
+            dispatchEmail(emailDetails);
         }
     }
     if (idsToUpdate.length > 0) {
-        console.log("Updating database hehehehehe")
-        // await updateEmailsTable(idsToUpdate);
+        await updateEmailsTable(idsToUpdate);
     }
 }
 
