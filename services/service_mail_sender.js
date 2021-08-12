@@ -39,8 +39,7 @@ function dispatchEmail(emailDetails) {
 function buildEmailDetails(emailData) {
     const emailDetails = {
         from: `"${process.env.MAIL_NAME || ''}" <${process.env.MAIL_USER}>`,
-        // to: emailData.trml_mailto,
-        to: "joseossorio99@hotmail.com",
+        to: emailData.trml_mailto,
         subject: emailData.trml_subject,
         text: convert(emailData.trml_body, {preserveNewlines: true})
     }
