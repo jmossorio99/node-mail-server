@@ -26,6 +26,7 @@ const sendEmailsTask = new AsyncTask(
  * This SimpleIntervalJob defines the interval for the automatic execution of the sendEmailsTask by
  * the scheduler.
  */
-const sendEmailsJob = new SimpleIntervalJob({seconds: 10,}, sendEmailsTask);
+const interval = parseInt(process.env.SCHEDULER_INTERVAL_SECONDS);
+const sendEmailsJob = new SimpleIntervalJob({seconds: interval,}, sendEmailsTask);
 
 exports.sendEmailsJob = sendEmailsJob;

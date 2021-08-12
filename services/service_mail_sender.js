@@ -5,8 +5,8 @@
  * Module dependencies.
  */
 const nodemailer = require("nodemailer");
-const { convert } = require('html-to-text');
-const { getEmailsTable, updateEmailsTable } = require("../config/database/dbConfig");
+const {convert} = require('html-to-text');
+const {getEmailsTable, updateEmailsTable} = require("../config/database/dbConfig");
 
 const transporter = nodemailer.createTransport({
     pool: true,
@@ -42,7 +42,7 @@ function buildEmailDetails(emailData) {
         // to: emailData.trml_mailto,
         to: "joseossorio99@hotmail.com",
         subject: emailData.trml_subject,
-        text: convert(emailData.trml_body, { preserveNewlines: true })
+        text: convert(emailData.trml_body, {preserveNewlines: true})
     }
     return emailDetails;
 }
@@ -68,4 +68,18 @@ const checkEmailsToSend = async () => {
     }
 }
 
+const MailSenderService = function (app) {
+    app.get("/mail-sender", (req, res) => {
+        checkEmailsToSend()
+            .then(_ => {
+                res.status(200)
+                res.send("Emails sent")
+            })
+            .catch(err => {
+                res.status(500)
+            })
+    })
+}
+
 exports.checkEmailsToSend = checkEmailsToSend;
+exports.MailSenderService = MailSenderService;
