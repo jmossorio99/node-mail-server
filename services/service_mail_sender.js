@@ -59,7 +59,7 @@ const MailSenderService = function (app) {
         checkEmailsToSend(false)
             .then(_ => {
                 res.status(200)
-                res.send("Emails sent")
+                res.send("Sending emails...")
             })
             .catch(err => {
                 res.status(500)
