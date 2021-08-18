@@ -5,7 +5,6 @@
  * Module dependencies.
  */
 const nodemailer = require("nodemailer");
-const {convert} = require('html-to-text');
 const {getEmailsTable, updateEmailsTable} = require("../config/database/dbConfig");
 
 const transporter = nodemailer.createTransport({
@@ -19,20 +18,6 @@ const transporter = nodemailer.createTransport({
 });
 
 /**
- * This function receives the emailDetails required by the nodemailer library
- * and then sends an email according to said details.
- */
-function dispatchEmail(emailDetails) {
-    transporter.sendMail(emailDetails, (err, data) => {
-        if (err) {
-            console.log("Error sending mail: ", err);
-        } else {
-            console.log("Email sent successfully.");
-        }
-    })
-}
-
-/**
  * This is an auxiliary function to build emailDetails for a specific emailData object retrieved from
  * the database
  */
@@ -41,7 +26,7 @@ function buildEmailDetails(emailData) {
         from: `"${process.env.MAIL_NAME || ''}" <${process.env.MAIL_USER}>`,
         to: emailData.trml_mailto,
         subject: emailData.trml_subject,
-        text: convert(emailData.trml_body, {preserveNewlines: true})
+        html: emailData.trml_body
     }
     return emailDetails;
 }
@@ -52,24 +37,26 @@ function buildEmailDetails(emailData) {
  * above. Finally, it makes sure to call the updateEmailsTable function defined
  * on the dbConfig.js module to update the rows of the emails that were sent.
  */
-const checkEmailsToSend = async () => {
+const checkEmailsToSend = async (isAutoSend) => {
     const rows = await getEmailsTable();
-    const idsToUpdate = [];
     for (const row of rows) {
         if (row.trml_issend === "N") {
-            idsToUpdate.push(`"${row.trml_key}"`);
             const emailDetails = buildEmailDetails(row);
-            dispatchEmail(emailDetails);
+            await transporter.sendMail(emailDetails, (err, data) => {
+                if (err) {
+                    console.log("Error sending mail: ", err);
+                } else {
+                    console.log("Email sent successfully.");
+                    updateEmailsTable(`"${row.trml_key}"`, isAutoSend);
+                }
+            })
         }
-    }
-    if (idsToUpdate.length > 0) {
-        await updateEmailsTable(idsToUpdate);
     }
 }
 
 const MailSenderService = function (app) {
     app.get("/mail-sender", (req, res) => {
-        checkEmailsToSend()
+        checkEmailsToSend(false)
             .then(_ => {
                 res.status(200)
                 res.send("Emails sent")

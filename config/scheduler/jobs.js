@@ -15,7 +15,7 @@ const { checkEmailsToSend } = require("../../services/service_mail_sender");
 const sendEmailsTask = new AsyncTask(
     "sendEmailsTask",
     () => {
-        return checkEmailsToSend();
+        return checkEmailsToSend(true);
     },
     (err) => {
         console.log(err)

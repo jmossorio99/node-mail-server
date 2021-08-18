@@ -34,12 +34,13 @@ async function getEmailsTable() {
  * This function receives a list of ids corresponding to rows of the email table. It then uses these
  * ids to update the corresponding rows changing the field trml_issend to 'Y'.
  */
-async function updateEmailsTable(idsToUpdate){
+async function updateEmailsTable(id, isAutoSend) {
+    const sentInfo = isAutoSend ? "An email has been automatically sent to " : "An email has been manually sent to ";
     let connection;
     try {
 
         connection = await pool.getConnection();
-        await connection.query(`UPDATE ${emailTableName} SET trml_issend='Y' WHERE trml_key IN (${idsToUpdate.join()})`);
+        await connection.query(`UPDATE ${emailTableName} SET trml_issend='Y', trml_sendinfo=CONCAT('${sentInfo}', trml_mailto) WHERE trml_key=${id}`);
 
     } catch (err) {
         throw err;
