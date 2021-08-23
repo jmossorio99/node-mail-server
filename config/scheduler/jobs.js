@@ -6,7 +6,7 @@
  * Module dependencies.
  */
 const { SimpleIntervalJob, AsyncTask } = require('toad-scheduler');
-const { checkEmailsToSend } = require("../../services/service_mail_sender");
+const MailSenderService = require("../../services/service_mail_sender");
 
 /**
  * This async task calls the checkEmailsToSend function in the service_mail_sender.js module. This task
@@ -15,7 +15,7 @@ const { checkEmailsToSend } = require("../../services/service_mail_sender");
 const sendEmailsTask = new AsyncTask(
     "sendEmailsTask",
     () => {
-        return checkEmailsToSend(true);
+        return MailSenderService.checkEmailsToSend({isAutoSend: true});
     },
     (err) => {
         console.log(err)

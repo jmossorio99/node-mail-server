@@ -9,16 +9,17 @@ const logger = require("morgan");
  */
 require("./config/scheduler/scheduler");
 
+/**
+ * Routes.
+ */
+const mailSenderRouter = require("./routes/uri/mail_sender_router");
+
 const app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-/**
- * Services.
- */
-const { MailSenderService } = require("./services/service_mail_sender");
-const mailSenderService = new MailSenderService(app);
+app.use("/mail-sender", mailSenderRouter);
 
 module.exports = app;

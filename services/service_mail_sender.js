@@ -5,7 +5,8 @@
  * Module dependencies.
  */
 const nodemailer = require("nodemailer");
-const {getEmailsTable, updateEmailsTable} = require("../config/database/dbConfig");
+const MailModel = require("../model/model_mail_sender");
+const {log} = require("debug");
 
 const transporter = nodemailer.createTransport({
     pool: true,
@@ -21,51 +22,42 @@ const transporter = nodemailer.createTransport({
  * This is an auxiliary function to build emailDetails for a specific emailData object retrieved from
  * the database
  */
-function buildEmailDetails(emailData) {
-    const emailDetails = {
+const buildEmailDetails = (emailData) => {
+    return {
         from: `"${process.env.MAIL_NAME || ''}" <${process.env.MAIL_USER}>`,
         to: emailData.trml_mailto,
         subject: emailData.trml_subject,
         html: emailData.trml_body
-    }
-    return emailDetails;
+    };
 }
 
-/**
- * This async function is called by the scheduler and it checks for emails to send.
- * If an email needs to be sent, it calls the dispatch email function defined
- * above. Finally, it makes sure to call the updateEmailsTable function defined
- * on the dbConfig.js module to update the rows of the emails that were sent.
- */
-const checkEmailsToSend = async (isAutoSend) => {
-    const rows = await getEmailsTable();
-    for (const row of rows) {
-        if (row.trml_issend === "N") {
-            const emailDetails = buildEmailDetails(row);
-            await transporter.sendMail(emailDetails, (err, data) => {
-                if (err) {
-                    console.log("Error sending mail: ", err);
-                } else {
-                    console.log("Email sent successfully.");
-                    updateEmailsTable(`"${row.trml_key}"`, isAutoSend);
+const MailSenderService = {
+
+    /**
+     * This async function is called by the scheduler and it checks for emails to send.
+     * If an email needs to be sent, it calls the dispatch email function defined
+     * above. Finally, it makes sure to call the updateEmailsTable function defined
+     * on the pool_mariadb.js module to update the rows of the emails that were sent.
+     */
+    checkEmailsToSend: async (params) => {
+        const queryResult = await MailModel.getCollection_mail();
+        if (queryResult.status === "success") {
+            const mails = queryResult.data;
+            for (const mail of mails) {
+                if (mail.trml_issend === "N") {
+                    const emailDetails = buildEmailDetails(mail);
+                    transporter.sendMail(emailDetails, (err, data) => {
+                        if (err) {
+                            console.log("Error sending mail: ", err);
+                        } else {
+                            console.log("Email sent successfully");
+                            MailModel.update_mail({id: `"${mail.trml_key}"`, isAutoSend: params.isAutoSend});
+                        }
+                    })
                 }
-            })
+            }
         }
     }
 }
 
-const MailSenderService = function (app) {
-    app.get("/mail-sender", (req, res) => {
-        checkEmailsToSend(false)
-            .then(_ => {
-                res.status(200)
-                res.send("Sending emails...")
-            })
-            .catch(err => {
-                res.status(500)
-            })
-    })
-}
-
-exports.checkEmailsToSend = checkEmailsToSend;
-exports.MailSenderService = MailSenderService;
+module.exports = MailSenderService;
