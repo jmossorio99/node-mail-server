@@ -10,11 +10,7 @@ The server also has one endpoint for GET requests on '/mail-sender' which perfor
 
 ## Installation
 
-Use either yarn or npm in the root folder of the project to install.
-
-```bash
-yarn install
-```
+Use npm in the root folder of the project to install.
 
 ```bash
 npm i
@@ -22,16 +18,16 @@ npm i
 
 ## Usage considerations
 
-This server requires the set up of multiple environment variables:
+This server requires the set up of multiple environment variables in the env/development.properties file for dev testing, for example.
 
-* DB_USER: the mariadb username
-* DB_HOST: server hosting the database
-* DB_PASSWORD: password for the mariadb user
-* DB_NAME: name of the specific database that will be accessed (Note: if this value is not specified it will appear blank on the sent email,
+* db.user: the mariadb username
+* db.host: server hosting the database
+* db.password: password for the mariadb user
+* db.name: name of the specific database that will be accessed (Note: if this value is not specified it will appear blank on the sent email,
 meaning that the recipient will only see the 'from' email address and not a name)
-* DB_EMAIL_TABLE: name of the email table that will be checked for unsent emails
-* MAIL_USER: the email from which the email will be sent
-* MAIL_PASSWORD: the password for the email account entered on MAIL_USER
-* MAIL_SMTP_SERVER: the corresponding SMTP server for the sending email account
-* MAIL_SMTP_PORT: SMTP port for the sending email account
-* SCHEDULER_INTERVAL_SECONDS: the interval duration for the execution of the task; e.g.: if this field has a value of 10, the task will be run every 10 seconds
+* db.tableName: name of the email table that will be checked for unsent emails
+* mail.user: the email from which the email will be sent
+* mail.password: the password for the email account entered on MAIL_USER
+* mail.smtpServer: the corresponding SMTP server for the sending email account
+* mail.smtpPort: SMTP port for the sending email account
+* mail.name: the name you wish to appear as the sender of the email
