@@ -4,17 +4,19 @@
 /**
  * Module dependencies.
  */
+const PropertiesReader = require("properties-reader");
+const env = require("../environments");
+const properties = new PropertiesReader(env.value)
 const nodemailer = require("nodemailer");
 const MailModel = require("../model/model_mail_sender");
-const {log} = require("debug");
 
 const transporter = nodemailer.createTransport({
     pool: true,
-    host: process.env.MAIL_SMTP_SERVER,
-    port: process.env.MAIL_SMTP_PORT,
+    host: properties.get("email.mail.smtpServer"),
+    port: properties.get("email.mail.smtpPort"),
     auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASSWORD
+        user: properties.get("email.mail.user"),
+        pass: properties.get("email.mail.password")
     }
 });
 
@@ -24,7 +26,7 @@ const transporter = nodemailer.createTransport({
  */
 const buildEmailDetails = (emailData) => {
     return {
-        from: `"${process.env.MAIL_NAME || ''}" <${process.env.MAIL_USER}>`,
+        from: `"${properties.get("email.mail.name") || ''}" <${properties.get("email.mail.user")}>`,
         to: emailData.trml_mailto,
         subject: emailData.trml_subject,
         html: emailData.trml_body

@@ -5,8 +5,12 @@
  * Module dependencies.
  */
 const mariadb = require('mariadb');
+const PropertiesReader = require("properties-reader");
+const env = require("../environments");
+const properties = new PropertiesReader(env.value)
 
-const pool = mariadb.createPool({host: process.env.DB_HOST, user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD, database: process.env.DB_NAME, connectionLimit: 5});
+
+const pool = mariadb.createPool({host: properties.get("database.db.host"), user: properties.get("database.db.user"),
+    password: properties.get("database.db.password"), database: properties.get("database.db.name"), connectionLimit: 5});
 
 module.exports = pool;
